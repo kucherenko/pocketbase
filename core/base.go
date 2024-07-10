@@ -1266,14 +1266,14 @@ func (app *BaseApp) initLogger() error {
 				return nil
 			})
 
+			// @todo replace with cron so that it doesn't rely on the logs write
+			//
 			// delete old logs
 			// ---
-			logsMaxDays := app.Settings().Logs.MaxDays
 			now := time.Now()
 			lastLogsDeletedAt := cast.ToTime(app.Store().Get("lastLogsDeletedAt"))
-			daysDiff := now.Sub(lastLogsDeletedAt).Hours() * 24
-			if daysDiff > float64(logsMaxDays) {
-				deleteErr := app.LogsDao().DeleteOldLogs(now.AddDate(0, 0, -1*logsMaxDays))
+			if now.Sub(lastLogsDeletedAt).Hours() >= 6 {
+				deleteErr := app.LogsDao().DeleteOldLogs(now.AddDate(0, 0, -1*app.Settings().Logs.MaxDays))
 				if deleteErr == nil {
 					app.Store().Set("lastLogsDeletedAt", now)
 				} else {

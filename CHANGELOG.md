@@ -1,3 +1,20 @@
+## v0.22.17
+
+- Updated the `editor` field to use the latest TinyMCE 6.8.4 and enabled `convert_unsafe_embeds:true` by default per the security advisories.
+  _The Admin UI shouldn't be affected by the older TinyMCE because we don't use directly the vulnerable options/plugins and we have a default CSP, but it is recommended to update even just for silencing the CI/CD warnings._
+
+- Disabled mouse selection when changing the sidebar width.
+  _This should also fix the reported Firefox issue when the sidebar width "resets" on mouse release out of the page window._
+
+- Other minor improvements (updated the logs delete check and tests, normalized internal errors formatting, updated Go deps, etc.)
+
+
+## v0.22.16
+
+- Fixed the days calculation for triggering old logs deletion ([#5179](https://github.com/pocketbase/pocketbase/pull/5179); thanks @nehmeroumani).
+  _Note that the previous versions correctly delete only the logs older than the configured setting but due to the typo the delete query is invoked unnecessary on each logs batch write._
+
+
 ## v0.22.15
 
 - Added mutex to `tests.TestMailer()` to minimize tests data race warnings ([#5157](https://github.com/pocketbase/pocketbase/issues/5157)).
