@@ -161,6 +161,14 @@
                             bind:config={formSettings.meta.confirmEmailChangeTemplate}
                         />
                     {/if}
+                    {#if !formSettings.meta.magicLinkTemplate.hidden}
+                        <EmailTemplateAccordion
+                            single
+                            key="meta.confirmEmailChangeTemplate"
+                            title={'Default "Login with Magic link" email template'}
+                            bind:config={formSettings.meta.magicLinkTemplate}
+                        />
+                    {/if}
                 </div>
 
                 <hr />

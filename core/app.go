@@ -245,6 +245,23 @@ type App interface {
 	// triggered and called only if their event data origin matches the tags.
 	OnMailerAfterRecordResetPasswordSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent]
 
+	// OnMailerBeforeRecordMagicLinkSend hook is triggered right
+	// before sending a magic link email to an auth record, allowing
+	// you to inspect and customize the email message that is being sent.
+	//
+	// If the optional "tags" list (Collection ids or names) is specified,
+	// then all event handlers registered via the created hook will be
+	// triggered and called only if their event data origin matches the tags.
+	OnMailerBeforeRecordMagicLinkSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent]
+
+	// OnMailerAfterRecordMagicLinkSend hook is triggered after a
+	// magic link email was successfully sent to an auth record.
+	//
+	// If the optional "tags" list (Collection ids or names) is specified,
+	// then all event handlers registered via the created hook will be
+	// triggered and called only if their event data origin matches the tags.
+	OnMailerAfterRecordMagicLinkSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent]
+
 	// OnMailerBeforeRecordVerificationSend hook is triggered right
 	// before sending a verification email to an auth record, allowing
 	// you to inspect and customize the email message that is being sent.
@@ -620,7 +637,45 @@ type App interface {
 	// triggered and called only if their event data origin matches the tags.
 	OnRecordAfterRequestVerificationRequest(tags ...string) *hook.TaggedHook[*RecordRequestVerificationEvent]
 
-	// OnRecordBeforeConfirmVerificationRequest hook is triggered before each Record
+	// OnRecordBeforeRequestMagicLinkRequest hook is triggered before each Record
+	// request magic link API request (after request data load and before sending the magic link email).
+	//
+	// Could be used to additionally validate the loaded request data or implement
+	// completely different verification behavior.
+	//
+	// If the optional "tags" list (Collection ids or names) is specified,
+	// then all event handlers registered via the created hook will be
+	// triggered and called only if their event data origin matches the tags.
+	OnRecordBeforeRequestMagicLinkRequest(tags ...string) *hook.TaggedHook[*RecordRequestMagicLinkEvent]
+
+	// OnRecordAfterRequestMagicLinkRequest hook is triggered after each
+	// successful request magic link API request.
+	//
+	// If the optional "tags" list (Collection ids or names) is specified,
+	// then all event handlers registered via the created hook will be
+	// triggered and called only if their event data origin matches the tags.
+	OnRecordAfterRequestMagicLinkRequest(tags ...string) *hook.TaggedHook[*RecordRequestMagicLinkEvent]
+
+	// OnRecordBeforeConfirmMagicLinkRequest hook is triggered before each Record
+	// confirm magic link API request (after request data load and before persistence).
+	//
+	// Could be used to additionally validate the request data or implement
+	// completely different persistence behavior.
+	//
+	// If the optional "tags" list (Collection ids or names) is specified,
+	// then all event handlers registered via the created hook will be
+	// triggered and called only if their event data origin matches the tags.
+	OnRecordBeforeConfirmMagicLinkRequest(tags ...string) *hook.TaggedHook[*RecordConfirmMagicLinkEvent]
+
+	// OnRecordAfterConfirmVerificationRequest hook is triggered after each
+	// successful confirm magic link API request.
+	//
+	// If the optional "tags" list (Collection ids or names) is specified,
+	// then all event handlers registered via the created hook will be
+	// triggered and called only if their event data origin matches the tags.
+	OnRecordAfterConfirmMagicLinkRequest(tags ...string) *hook.TaggedHook[*RecordConfirmMagicLinkEvent]
+
+	// OnRecordBeforeConfirmMagicLinkRequest hook is triggered before each Record
 	// confirm verification API request (after request data load and before persistence).
 	//
 	// Could be used to additionally validate the request data or implement

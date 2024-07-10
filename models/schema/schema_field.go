@@ -44,10 +44,12 @@ const (
 	FieldNameEmailVisibility        string = "emailVisibility"
 	FieldNameVerified               string = "verified"
 	FieldNameTokenKey               string = "tokenKey"
+	FieldNameMagicLinkTokenKey      string = "magicLinkTokenKey"
 	FieldNamePasswordHash           string = "passwordHash"
 	FieldNameLastResetSentAt        string = "lastResetSentAt"
 	FieldNameLastVerificationSentAt string = "lastVerificationSentAt"
 	FieldNameLastLoginAlertSentAt   string = "lastLoginAlertSentAt"
+	FieldNameLastMagicLinkSentAt    string = "lastMagicLinkSentAt"
 )
 
 // BaseModelFieldNames returns the field names that all models have (id, created, updated).
@@ -76,10 +78,12 @@ func AuthFieldNames() []string {
 		FieldNameEmailVisibility,
 		FieldNameVerified,
 		FieldNameTokenKey,
+		FieldNameMagicLinkTokenKey,
 		FieldNamePasswordHash,
 		FieldNameLastResetSentAt,
 		FieldNameLastVerificationSentAt,
 		FieldNameLastLoginAlertSentAt,
+		FieldNameLastMagicLinkSentAt,
 	}
 }
 

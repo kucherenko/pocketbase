@@ -855,6 +855,24 @@ func (m *Record) SetTokenKey(key string) error {
 	return nil
 }
 
+// MagicLinkTokenKey returns the "magicLinkTokenKey" auth record data value.
+func (m *Record) MagicLinkTokenKey() string {
+	return m.GetString(schema.FieldNameMagicLinkTokenKey)
+}
+
+// SetMagicLinkTokenKey sets the "magicLinkTokenKey" auth record data value.
+//
+// Returns an error if the record is not from an auth collection.
+func (m *Record) SetMagicLinkTokenKey(key string) error {
+	if !m.collection.IsAuth() {
+		return notAuthRecordErr
+	}
+
+	m.Set(schema.FieldNameMagicLinkTokenKey, key)
+
+	return nil
+}
+
 // RefreshTokenKey generates and sets new random auth record "tokenKey".
 //
 // Returns an error if the record is not from an auth collection.
@@ -885,6 +903,11 @@ func (m *Record) LastVerificationSentAt() types.DateTime {
 	return m.GetDateTime(schema.FieldNameLastVerificationSentAt)
 }
 
+// LastMagicLinkSentAt returns the "lastMagicLinkSentAt" auth record data value.
+func (m *Record) LastMagicLinkSentAt() types.DateTime {
+	return m.GetDateTime(schema.FieldNameLastMagicLinkSentAt)
+}
+
 // SetLastVerificationSentAt sets an "lastVerificationSentAt" auth record data value.
 //
 // Returns an error if the record is not from an auth collection.
@@ -894,6 +917,19 @@ func (m *Record) SetLastVerificationSentAt(dateTime types.DateTime) error {
 	}
 
 	m.Set(schema.FieldNameLastVerificationSentAt, dateTime)
+
+	return nil
+}
+
+// SetLastMagicLinkSentAt sets an "lastMagicLinkSentAt" auth record data value.
+//
+// Returns an error if the record is not from an auth collection.
+func (m *Record) SetLastMagicLinkSentAt(dateTime types.DateTime) error {
+	if !m.collection.IsAuth() {
+		return notAuthRecordErr
+	}
+
+	m.Set(schema.FieldNameLastMagicLinkSentAt, dateTime)
 
 	return nil
 }

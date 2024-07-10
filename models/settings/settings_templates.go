@@ -8,6 +8,21 @@ const (
 	EmailPlaceholderActionUrl string = "{ACTION_URL}"
 )
 
+var defaultMagicLinkTemplate = EmailTemplate{
+	Subject: "Sing-in to " + EmailPlaceholderAppName,
+	Body: `<p>Hello,</p>
+<p>Thank you for joining us at ` + EmailPlaceholderAppName + `.</p>
+<p>Click on the button below to enter to te application.</p>
+<p>
+  <a class="btn" href="` + EmailPlaceholderActionUrl + `" target="_blank" rel="noopener">Sign-in</a>
+</p>
+<p>
+  Thanks,<br/>
+  ` + EmailPlaceholderAppName + ` team
+</p>`,
+	ActionUrl: EmailPlaceholderAppUrl + "/_/#/auth/confirm-magic-link/" + EmailPlaceholderToken,
+}
+
 var defaultVerificationTemplate = EmailTemplate{
 	Subject: "Verify your " + EmailPlaceholderAppName + " email",
 	Body: `<p>Hello,</p>

@@ -129,6 +129,46 @@ func SendRecordVerification(app core.App, authRecord *models.Record) error {
 	})
 }
 
+// SendRecordMagicLink sends a MagicLink request email to the specified user.
+func SendRecordMagicLink(app core.App, authRecord *models.Record) error {
+	token, tokenErr := tokens.NewRecordVerifyToken(app, authRecord)
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	mailClient := app.NewMailClient()
+
+	subject, body, err := resolveEmailTemplate(app, token, app.Settings().Meta.MagicLinkTemplate)
+	if err != nil {
+		return err
+	}
+
+	message := &mailer.Message{
+		From: mail.Address{
+			Name:    app.Settings().Meta.SenderName,
+			Address: app.Settings().Meta.SenderAddress,
+		},
+		To:      []mail.Address{{Address: authRecord.Email()}},
+		Subject: subject,
+		HTML:    body,
+	}
+
+	event := new(core.MailerRecordEvent)
+	event.MailClient = mailClient
+	event.Message = message
+	event.Collection = authRecord.Collection()
+	event.Record = authRecord
+	event.Meta = map[string]any{"token": token}
+
+	return app.OnMailerBeforeRecordMagicLinkSend().Trigger(event, func(e *core.MailerRecordEvent) error {
+		if err := e.MailClient.Send(e.Message); err != nil {
+			return err
+		}
+
+		return app.OnMailerAfterRecordMagicLinkSend().Trigger(e)
+	})
+}
+
 // SendRecordChangeEmail sends a change email confirmation email to the specified user.
 func SendRecordChangeEmail(app core.App, record *models.Record, newEmail string) error {
 	token, tokenErr := tokens.NewRecordChangeEmailToken(app, record, newEmail)

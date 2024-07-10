@@ -48,6 +48,8 @@ func bindRecordAuthApi(app core.App, rg *echo.Group) {
 	subGroup.POST("/auth-with-password", api.authWithPassword)
 	subGroup.POST("/request-password-reset", api.requestPasswordReset)
 	subGroup.POST("/confirm-password-reset", api.confirmPasswordReset)
+	subGroup.POST("/request-magic-link", api.requestMagicLink)
+	subGroup.POST("/confirm-magic-link", api.confirmMagicLink)
 	subGroup.POST("/request-verification", api.requestVerification)
 	subGroup.POST("/confirm-verification", api.confirmVerification)
 	subGroup.POST("/request-email-change", api.requestEmailChange, RequireSameContextRecordAuth())
@@ -460,6 +462,60 @@ func (api *recordAuthApi) confirmPasswordReset(c echo.Context) error {
 	return submitErr
 }
 
+func (api *recordAuthApi) requestMagicLink(c echo.Context) error {
+	collection, _ := c.Get(ContextCollectionKey).(*models.Collection)
+	if collection == nil {
+		return NewNotFoundError("Missing collection context.", nil)
+	}
+
+	form := forms.NewRecordMagicLinkRequest(api.app, collection)
+	if err := c.Bind(form); err != nil {
+		return NewBadRequestError("An error occurred while loading the submitted data.", err)
+	}
+
+	if err := form.Validate(); err != nil {
+		return NewBadRequestError("An error occurred while validating the form.", err)
+	}
+
+	event := new(core.RecordRequestMagicLinkEvent)
+	event.HttpContext = c
+	event.Collection = collection
+
+	submitErr := form.Submit(func(next forms.InterceptorNextFunc[*models.Record]) forms.InterceptorNextFunc[*models.Record] {
+		return func(record *models.Record) error {
+			event.Record = record
+
+			return api.app.OnRecordBeforeRequestMagicLinkRequest().Trigger(event, func(e *core.RecordRequestMagicLinkEvent) error {
+				// run in background because we don't need to show the result to the client
+				routine.FireAndForget(func() {
+					if err := next(e.Record); err != nil {
+						api.app.Logger().Debug(
+							"Failed to send magic link email",
+							slog.String("error", err.Error()),
+						)
+					}
+				})
+
+				return api.app.OnRecordAfterRequestMagicLinkRequest().Trigger(event, func(e *core.RecordRequestMagicLinkEvent) error {
+					if e.HttpContext.Response().Committed {
+						return nil
+					}
+
+					return e.HttpContext.NoContent(http.StatusNoContent)
+				})
+			})
+		}
+	})
+
+	// eagerly write 204 response and skip submit errors
+	// as a measure against users enumeration
+	if !c.Response().Committed {
+		c.NoContent(http.StatusNoContent)
+	}
+
+	return submitErr
+}
+
 func (api *recordAuthApi) requestVerification(c echo.Context) error {
 	collection, _ := c.Get(ContextCollectionKey).(*models.Collection)
 	if collection == nil {
@@ -510,6 +566,44 @@ func (api *recordAuthApi) requestVerification(c echo.Context) error {
 	if !c.Response().Committed {
 		c.NoContent(http.StatusNoContent)
 	}
+
+	return submitErr
+}
+
+func (api *recordAuthApi) confirmMagicLink(c echo.Context) error {
+	collection, _ := c.Get(ContextCollectionKey).(*models.Collection)
+	if collection == nil {
+		return NewNotFoundError("Missing collection context.", nil)
+	}
+
+	form := forms.NewRecordMagicLinkConfirm(api.app, collection)
+	if readErr := c.Bind(form); readErr != nil {
+		return NewBadRequestError("An error occurred while loading the submitted data.", readErr)
+	}
+
+	event := new(core.RecordConfirmMagicLinkEvent)
+	event.HttpContext = c
+	event.Collection = collection
+
+	_, submitErr := form.Submit(func(next forms.InterceptorNextFunc[*models.Record]) forms.InterceptorNextFunc[*models.Record] {
+		return func(record *models.Record) error {
+			event.Record = record
+
+			return api.app.OnRecordBeforeConfirmMagicLinkRequest().Trigger(event, func(e *core.RecordConfirmMagicLinkEvent) error {
+				if err := next(e.Record); err != nil {
+					return NewBadRequestError("An error occurred while submitting the form.", err)
+				}
+
+				return api.app.OnRecordAfterConfirmMagicLinkRequest().Trigger(event, func(e *core.RecordConfirmMagicLinkEvent) error {
+					if e.HttpContext.Response().Committed {
+						return nil
+					}
+
+					return e.HttpContext.NoContent(http.StatusNoContent)
+				})
+			})
+		}
+	})
 
 	return submitErr
 }

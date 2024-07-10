@@ -37,6 +37,7 @@ type Settings struct {
 	RecordPasswordResetToken TokenConfig `form:"recordPasswordResetToken" json:"recordPasswordResetToken"`
 	RecordEmailChangeToken   TokenConfig `form:"recordEmailChangeToken" json:"recordEmailChangeToken"`
 	RecordVerificationToken  TokenConfig `form:"recordVerificationToken" json:"recordVerificationToken"`
+	RecordMagicLinkToken     TokenConfig `form:"recordMagicLinkToken" json:"recordMagicLinkToken"`
 	RecordFileToken          TokenConfig `form:"recordFileToken" json:"recordFileToken"`
 
 	// Deprecated: Will be removed in v0.9+
@@ -78,6 +79,7 @@ func New() *Settings {
 			HideControls:               false,
 			SenderName:                 "Support",
 			SenderAddress:              "support@example.com",
+			MagicLinkTemplate:          defaultMagicLinkTemplate,
 			VerificationTemplate:       defaultVerificationTemplate,
 			ResetPasswordTemplate:      defaultResetPasswordTemplate,
 			ConfirmEmailChangeTemplate: defaultConfirmEmailChangeTemplate,
@@ -295,6 +297,7 @@ func (s *Settings) RedactClone() (*Settings, error) {
 		&clone.RecordPasswordResetToken.Secret,
 		&clone.RecordEmailChangeToken.Secret,
 		&clone.RecordVerificationToken.Secret,
+		&clone.RecordMagicLinkToken.Secret,
 		&clone.RecordFileToken.Secret,
 		&clone.GoogleAuth.ClientSecret,
 		&clone.FacebookAuth.ClientSecret,
@@ -508,6 +511,7 @@ type MetaConfig struct {
 	HideControls               bool          `form:"hideControls" json:"hideControls"`
 	SenderName                 string        `form:"senderName" json:"senderName"`
 	SenderAddress              string        `form:"senderAddress" json:"senderAddress"`
+	MagicLinkTemplate          EmailTemplate `form:"magicLinkTemplate" json:"magicLinkTemplate"`
 	VerificationTemplate       EmailTemplate `form:"verificationTemplate" json:"verificationTemplate"`
 	ResetPasswordTemplate      EmailTemplate `form:"resetPasswordTemplate" json:"resetPasswordTemplate"`
 	ConfirmEmailChangeTemplate EmailTemplate `form:"confirmEmailChangeTemplate" json:"confirmEmailChangeTemplate"`
@@ -520,6 +524,7 @@ func (c MetaConfig) Validate() error {
 		validation.Field(&c.AppUrl, validation.Required, is.URL),
 		validation.Field(&c.SenderName, validation.Required, validation.Length(1, 255)),
 		validation.Field(&c.SenderAddress, is.EmailFormat, validation.Required),
+		validation.Field(&c.MagicLinkTemplate, validation.Required),
 		validation.Field(&c.VerificationTemplate, validation.Required),
 		validation.Field(&c.ResetPasswordTemplate, validation.Required),
 		validation.Field(&c.ConfirmEmailChangeTemplate, validation.Required),

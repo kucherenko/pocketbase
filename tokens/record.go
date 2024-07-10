@@ -44,6 +44,24 @@ func NewRecordVerifyToken(app core.App, record *models.Record) (string, error) {
 	)
 }
 
+// NewRecordMagicLinkToken generates and returns a new record magic link token.
+func NewRecordMagicLinkToken(app core.App, record *models.Record) (string, error) {
+	if !record.Collection().IsAuth() {
+		return "", errors.New("The record is not from an auth collection.")
+	}
+
+	return security.NewJWT(
+		jwt.MapClaims{
+			"id":           record.Id,
+			"type":         TypeAuthRecord,
+			"collectionId": record.Collection().Id,
+			"email":        record.Email(),
+		},
+		(record.MagicLinkTokenKey() + app.Settings().RecordVerificationToken.Secret),
+		app.Settings().RecordVerificationToken.Duration,
+	)
+}
+
 // NewRecordResetPasswordToken generates and returns a new auth record password reset request token.
 func NewRecordResetPasswordToken(app core.App, record *models.Record) (string, error) {
 	if !record.Collection().IsAuth() {

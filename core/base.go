@@ -86,6 +86,8 @@ type BaseApp struct {
 	onMailerAfterRecordResetPasswordSend  *hook.Hook[*MailerRecordEvent]
 	onMailerBeforeRecordVerificationSend  *hook.Hook[*MailerRecordEvent]
 	onMailerAfterRecordVerificationSend   *hook.Hook[*MailerRecordEvent]
+	onMailerBeforeRecordMagicLinkSend     *hook.Hook[*MailerRecordEvent]
+	onMailerAfterRecordMagicLinkSend      *hook.Hook[*MailerRecordEvent]
 	onMailerBeforeRecordChangeEmailSend   *hook.Hook[*MailerRecordEvent]
 	onMailerAfterRecordChangeEmailSend    *hook.Hook[*MailerRecordEvent]
 
@@ -691,6 +693,14 @@ func (app *BaseApp) OnMailerBeforeRecordVerificationSend(tags ...string) *hook.T
 
 func (app *BaseApp) OnMailerAfterRecordVerificationSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent] {
 	return hook.NewTaggedHook(app.onMailerAfterRecordVerificationSend, tags...)
+}
+
+func (app *BaseApp) OnMailerBeforeRecordMagicLinkSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent] {
+	return hook.NewTaggedHook(app.onMailerBeforeRecordMagicLinkSend, tags...)
+}
+
+func (app *BaseApp) OnMailerAfterRecordMagicLinkSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent] {
+	return hook.NewTaggedHook(app.onMailerAfterRecordMagicLinkSend, tags...)
 }
 
 func (app *BaseApp) OnMailerBeforeRecordChangeEmailSend(tags ...string) *hook.TaggedHook[*MailerRecordEvent] {

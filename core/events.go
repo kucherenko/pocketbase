@@ -261,7 +261,21 @@ type RecordRequestVerificationEvent struct {
 	Record      *models.Record
 }
 
+type RecordRequestMagicLinkEvent struct {
+	BaseCollectionEvent
+
+	HttpContext echo.Context
+	Record      *models.Record
+}
+
 type RecordConfirmVerificationEvent struct {
+	BaseCollectionEvent
+
+	HttpContext echo.Context
+	Record      *models.Record
+}
+
+type RecordConfirmMagicLinkEvent struct {
 	BaseCollectionEvent
 
 	HttpContext echo.Context
